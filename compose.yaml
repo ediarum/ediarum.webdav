@@ -1,0 +1,148 @@
+# ediarum.webdav: every process it needs. ediarum.platform pulls this file in with
+#
+#   include:
+#     - path: https://github.com/ediarum/ediarum.WEBDAV.git#<tag>:compose.yaml
+#       env_file: ./env/webdav.env
+#
+# so: service names are prefixed, nothing publishes ports (the platform proxy reaches
+# http://webdav:8080), and all configuration comes from ${VAR} interpolation -- an env_file:
+# here would resolve inside the remote checkout. Standalone, Compose reads this repo's .env
+# (see .env.example); compose.override.yaml then publishes port 8080.
+# See documentation/DEPLOYMENT.md.
+
+x-webdav-env: &webdav-env
+  APP_NAME: "Ediarum Webdav"
+  APP_KEY: ${APP_KEY:?APP_KEY is required (php artisan key:generate --show)}
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_URL: ${APP_URL:-https://ediarum.example.org}
+  # Origin WebDAV clients connect to; empty means APP_URL (config/app.php).
+  WEBDAV_ORIGIN: ${WEBDAV_ORIGIN:-}
+  # Public prefix of the WebDAV endpoint (/webdav/connection/<slug>); the proxy strips it.
+  # Unset means /webdav; set but empty means no prefix (local, without the platform proxy).
+  APP_SUBPATH: ${APP_SUBPATH-/webdav}
+  ADMIN_PANEL_ENABLED: ${ADMIN_PANEL_ENABLED:-true}
+  TRUSTED_PROXIES: "*"
+
+  DB_CONNECTION: mysql
+  DB_HOST: webdav-db
+  DB_PORT: "3306"
+  DB_DATABASE: ${DB_DATABASE:-ediarum_webdav}
+  DB_USERNAME: ${DB_USERNAME:-ediarum_webdav}
+  DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+
+  # Several containers, no shared local files.
+  QUEUE_CONNECTION: database
+  CACHE_DRIVER: database
+  SESSION_DRIVER: database
+  BROADCAST_DRIVER: log
+  LOG_CHANNEL: stderr
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+  # The platform login. No SESSION_DOMAIN: host-only cookie (platform ADR 0004).
+  SESSION_COOKIE: ediarum_session
+  SESSION_LIFETIME: ${SESSION_LIFETIME:-120}
+  SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE:-true}
+
+  REPOSITORIES_DIRECTORY: /data/repositories
+  GIT_PATH: ${GIT_PATH:-git}
+  # Commit author; empty falls back to config/app.php's defaults.
+  APP_GIT_USER_NAME: ${APP_GIT_USER_NAME:-}
+  APP_GIT_USER_EMAIL: ${APP_GIT_USER_EMAIL:-}
+  GIT_MASTER_USERNAME: ${GIT_MASTER_USERNAME:-}
+  GIT_MASTER_ACCESS_TOKEN: ${GIT_MASTER_ACCESS_TOKEN:-}
+  GIT_PUSH_TIMEOUT: ${GIT_PUSH_TIMEOUT:-60}
+
+  # First admin, created by webdav-migrate only while the users table is empty.
+  INITIAL_USER_NAME: ${INITIAL_USER_NAME:-}
+  INITIAL_USER_EMAIL: ${INITIAL_USER_EMAIL:-}
+  INITIAL_USER_PASSWORD: ${INITIAL_USER_PASSWORD:-}
+
+  EDIARUM_SERVICES_URL: ${EDIARUM_SERVICES_URL:-}
+  EDIARUM_SERVICES_API_KEY: ${EDIARUM_SERVICES_API_KEY:-}
+
+  MAIL_MAILER: ${MAIL_MAILER:-log}
+  MAIL_HOST: ${MAIL_HOST:-}
+  MAIL_PORT: ${MAIL_PORT:-}
+  MAIL_USERNAME: ${MAIL_USERNAME:-}
+  MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+  MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-}
+  MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-}
+  MAIL_FROM_NAME: ${MAIL_FROM_NAME:-}
+
+  PHP_OPCACHE_ENABLE: "1"
+
+x-webdav-app: &webdav-app
+  image: ediarum-webdav:${WEBDAV_VERSION:-dev}
+  restart: unless-stopped
+  environment: *webdav-env
+  depends_on:
+    webdav-db:
+      condition: service_healthy
+    webdav-migrate:
+      condition: service_completed_successfully
+
+# Where the projects' git repositories live; the jobs commit and push from there.
+x-webdav-repositories: &webdav-repositories ${WEBDAV_REPOSITORIES_DIR:?WEBDAV_REPOSITORIES_DIR is required}:/data/repositories
+
+services:
+  webdav:
+    <<: *webdav-app
+    build: .
+    volumes:
+      - *webdav-repositories
+
+  webdav-migrate:
+    image: ediarum-webdav:${WEBDAV_VERSION:-dev}
+    restart: "no"
+    environment: *webdav-env
+    command: ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force"]
+    healthcheck:
+      disable: true
+    depends_on:
+      webdav-db:
+        condition: service_healthy
+
+  webdav-queue:
+    <<: *webdav-app
+    command: ["php", "artisan", "queue:work", "--queue=default,git-remote,ediarum-services,exist-db"]
+    volumes:
+      - *webdav-repositories
+    deploy:
+      replicas: 2
+    # Let a running push or eXist-db sync finish (supervisor's stopwaitsecs=3600).
+    stop_signal: SIGTERM
+    stop_grace_period: 1h
+    healthcheck:
+      test: ["CMD", "healthcheck-queue"]
+      start_period: 10s
+
+  webdav-scheduler:
+    <<: *webdav-app
+    command: ["php", "artisan", "schedule:work"]
+    volumes:
+      - *webdav-repositories
+    stop_signal: SIGTERM
+    healthcheck:
+      test: ["CMD", "healthcheck-schedule"]
+      start_period: 10s
+
+  webdav-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE:-ediarum_webdav}
+      MARIADB_USER: ${DB_USERNAME:-ediarum_webdav}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD is required}
+    volumes:
+      - webdav-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  webdav-db:

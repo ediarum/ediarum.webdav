@@ -1,0 +1,24 @@
+message: "If you use this software, please cite it using these metadata."
+authors:
+    - family-names: Lampert
+      given-names: Marcus
+      orcid: "https://orcid.org/0009-0008-1777-819X"
+    - family-names: Arndt
+      given-names: Nadine
+      orcid: "https://orcid.org/0000-0002-2257-7236"
+    - family-names: Fechner
+      given-names: Martin
+      orcid: "https://orcid.org/0000-0001-9233-0653"
+    - family-names: Wierzoch
+      given-names: Jan
+      orcid: "https://orcid.org/0000-0002-6388-4064"
+
+title: ediarum.WEBDAV
+abstract: "ediarum.WEBDAV allows users to edit files over a WebDAV connection and tracks those changes via automatic git commits."
+type: software
+date-released: "2026-11"
+version: 1.0.0
+repository-code: "https://github.com/ediarum/ediarum.WEBDAV"
+license: "GPL-3.0"
+url: "https://www.ediarum.org"
+cff-version: 1.2.0

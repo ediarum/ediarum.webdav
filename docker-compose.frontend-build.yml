@@ -1,0 +1,6 @@
+services:
+  frontend:
+    image: node:20
+    volumes:
+      - .:/app:rw
+    command: bash -c "cd /app && npm install && npm run build && chown www-data:www-data . "

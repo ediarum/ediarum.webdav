@@ -1,0 +1,23 @@
+.git
+.idea
+.claude
+.env
+.env.*
+!.env.example
+node_modules
+vendor
+public/apps/webdav
+public/hot
+public/storage
+# Local state; the Dockerfile recreates the directories. storage/framework/ can hold a
+# `down` file (maintenance mode) or cached config from a local run.
+storage/app/*
+storage/framework/*
+storage/logs/*
+bootstrap/cache/*.php
+*.sqlite
+*.log
+.phpunit.result.cache
+.phpunit.cache
+compose*.yaml
+Dockerfile

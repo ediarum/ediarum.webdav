@@ -1,0 +1,45 @@
+/*
+ * The app's only stylesheet, injected by embed.js into the portal page. Everything the app renders
+ * sits inside .wd-root (App.vue). Preflight and the theme variables are rewritten to apply only
+ * there by the scoping PostCSS plugin (build step, see planning/portal-integration.md); utilities
+ * stay global. No styles for html, body or bare elements outside .wd-root.
+ */
+@import "tailwindcss" source(none);
+@source "./";
+
+@theme {
+    --font-sans: 'Noto Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --color-ediarum-red: #E5312E;
+    --color-ediarum-gray: #969696;
+}
+
+@layer components {
+    .wd-root button:not(:disabled) {
+        cursor: pointer;
+    }
+
+    /* Ring colors match each button's own background, and only show for keyboard focus. */
+    .wd-btn-primary {
+        @apply inline-flex items-center px-4 py-2 bg-ediarum-red border border-transparent rounded-md
+               font-semibold text-xs text-white uppercase tracking-widest transition ease-in-out duration-150
+               hover:bg-gray-700 focus:bg-ediarum-gray active:bg-ediarum-gray
+               disabled:opacity-25 disabled:cursor-not-allowed
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-ediarum-red focus-visible:ring-offset-2;
+    }
+
+    .wd-btn-secondary {
+        @apply inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm
+               font-semibold text-xs text-gray-700 uppercase tracking-widest transition ease-in-out duration-150
+               hover:bg-gray-50 disabled:opacity-25
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2;
+    }
+
+    .wd-input {
+        @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white
+               focus:outline-none focus:border-ediarum-red focus:ring-1 focus:ring-ediarum-red;
+    }
+
+    .wd-root code {
+        @apply bg-gray-100 text-red-800 py-1 px-3;
+    }
+}

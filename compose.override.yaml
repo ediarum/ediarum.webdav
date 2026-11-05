@@ -1,0 +1,6 @@
+# Local development only: Compose loads this file when the repo runs standalone
+# (`docker compose up`); ediarum.platform's include ignores it.
+services:
+  webdav:
+    ports:
+      - "8080:8080"

@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "strict": true,
+        "jsx": "preserve",
+        "moduleResolution": "bundler",
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "lib": [
+            "esnext",
+            "dom"
+        ],
+        "noEmit": true
+    },
+    "include": [
+        "resources/spa/**/*.ts",
+        "resources/spa/**/*.vue"
+    ]
+}

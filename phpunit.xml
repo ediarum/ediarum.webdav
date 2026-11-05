@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <!-- A developer's own .env (gitignored, unlike .env.example) may point GIT_PATH at a
+             non-PATH location, e.g. a literal Windows path for local Windows dev. Force the plain
+             `git` binary here so MakeGitCommit/PushToGitRemote's real git shell-outs (and
+             GitCommitIntegrationTest) stay hermetic regardless of whatever .env says. -->
+        <env name="GIT_PATH" value="git"/>
+        <!-- .env.example ships the real production value ("/webdav") since that's what actually
+             matters for a fresh deployment, but most WebDAV tests hardcode subpath-free paths
+             (e.g. MOVE/COPY's Destination header) because they aren't testing subpath behavior at
+             all. Force it empty here so the bulk of the suite stays hermetic regardless of .env;
+             WebDavControllerWiringTest's subpath-specific tests override this explicitly per-test via
+             config(['app.subpath' => '/webdav']), which is unaffected by this default. -->
+        <env name="APP_SUBPATH" value=""/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+    </php>
+</phpunit>

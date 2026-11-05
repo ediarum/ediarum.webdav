@@ -1,0 +1,10 @@
+<exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <exist:collection name="/db/apps/cagb-data/data/Texte/Kleintexte" created="2025-01-06T15:22:54.382Z" owner="admin" group="cagb-nutzer" permissions="rwxrwx--x">
+        <exist:collection name="An" created="2025-01-06T15:22:54.384Z" owner="admin" group="cagb-nutzer" permissions="rwxrwx--x"/>
+        <exist:collection name="Int" created="2025-01-06T15:22:54.389Z" owner="admin" group="cagb-nutzer" permissions="rwxrwx--x"/>
+        <exist:collection name="AnalPr" created="2025-01-06T15:22:54.393Z" owner="admin" group="cagb-nutzer" permissions="rwxrwx--x"/>
+        <exist:collection name="Cael" created="2025-01-06T15:22:54.399Z" owner="admin" group="cagb-nutzer" permissions="rwxrwx--x"/>
+        <exist:collection name="AnalPost" created="2025-01-06T15:22:54.404Z" owner="admin" group="cagb-nutzer" permissions="rwxrwx--x"/>
+        <exist:resource name="Blemmydes-Aposemeioseis-Bon-3637.xml" created="2025-01-06T15:22:54.383Z" last-modified="2025-01-06T15:22:54.383Z" owner="admin" group="cagb-nutzer" permissions="rw-rw----"/>
+    </exist:collection>
+</exist:result>
